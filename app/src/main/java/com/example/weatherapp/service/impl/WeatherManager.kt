@@ -19,8 +19,8 @@ class WeatherManager : IWeatherManager {
         api = retrofitClient.getRetrofit().create(IWeatherAPI::class.java)
     }
 
-    override fun getWeatherData(callback: RequestCallback<WeatherData>) {
-        api.getWeatherData().enqueue(object: Callback<WeatherData> {
+    override fun getWeatherData(lat:Float, lon:Float, callback: RequestCallback<WeatherData>) {
+        api.getWeatherData(lat, lon).enqueue(object: Callback<WeatherData> {
             override fun onFailure(call: Call<WeatherData>, t: Throwable) {
                 callback.onError(t)
             }

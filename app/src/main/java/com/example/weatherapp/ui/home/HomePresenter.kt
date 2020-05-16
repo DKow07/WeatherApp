@@ -6,8 +6,10 @@ import com.example.weatherapp.service.impl.WeatherManager
 
 class HomePresenter(private val weatherManager: WeatherManager, val view: HomeContract.View) : HomeContract.Presenter{
 
+    private val lodzLoc = Pair(51.75f, 19.47f)
+
     override fun getWeatherData() {
-        weatherManager.getWeatherData(object: RequestCallback<WeatherData> {
+        weatherManager.getWeatherData(lodzLoc.first, lodzLoc.second, object: RequestCallback<WeatherData> {
             override fun onSuccess(data: WeatherData) {
                 view.onSuccessGetWeatherData(data)
             }
