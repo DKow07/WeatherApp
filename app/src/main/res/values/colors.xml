@@ -6,4 +6,8 @@
 
     <color name="shadowColor">#5b000000</color>
     <color name="white">#fff</color>
+
+    <color name="sunnyColorLight">#FFF08E</color>
+    <color name="cloudyColorLight">#D5D5D5</color>
+    <color name="rainyColorLight">#97B9FF</color>
 </resources>
