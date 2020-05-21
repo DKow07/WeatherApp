@@ -23,10 +23,11 @@ class HomeFragment : Fragment(), HomeContract.View {
     private lateinit var dayNameTextView: TextView
     private lateinit var weatherIconImageView: ImageView
     private lateinit var weatherTypeTextView: TextView
+    private lateinit var weatherDescTextView: TextView
     private lateinit var mainTempTextView: TextView
     private lateinit var backgroud: ConstraintLayout
 
-    private val weatherTypeToInt = mapOf("Rain" to 1, "Sun" to 2, "Cloud" to 3)
+    private val weatherTypeToInt = mapOf("Rain" to 1, "Clear" to 2, "Clouds" to 3, "Snow" to 4, "Thunderstorm" to 5, "Drizzle" to 6)
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -50,7 +51,8 @@ class HomeFragment : Fragment(), HomeContract.View {
         dayNameTextView.text = getDayStringFromTimestamp(currentWeather.dateTime)
         weatherTypeTextView.text = currentWeather.weather[0].main
         mainTempTextView.text = (currentWeather.temp.day.toInt()).toString() + "\u2103"
-        setWeatherIconAndBackground(weatherTypeToInt[currentWeather.weather[0].main] ?: error(""))
+        weatherDescTextView.text = "(" + currentWeather.weather[0].desc + ")"
+        setWeatherIconAndBackground(weatherTypeToInt[currentWeather.weather[0].main] ?: 0)
 
     }
 
@@ -63,31 +65,35 @@ class HomeFragment : Fragment(), HomeContract.View {
         dayNameTextView = view.findViewById(R.id.dayNameText)
         weatherIconImageView = view.findViewById(R.id.weatherIconImage)
         weatherTypeTextView = view.findViewById(R.id.weatherTypeText)
+        weatherDescTextView = view.findViewById(R.id.weatherDescText)
         mainTempTextView = view.findViewById(R.id.mainTempText)
         backgroud = view.findViewById(R.id.layoutBackground)
     }
 
     private fun getDayStringFromTimestamp(timestamp: Long): String {
         val sdf = SimpleDateFormat("EEEE", Locale.US)
-        return sdf.format(Date(timestamp))
+        return sdf.format(Date(timestamp*1000))
     }
 
     private fun setWeatherIconAndBackground(weatherId: Int) {
         when(weatherId) {
-            1 -> {
+            weatherTypeToInt["Rain"], weatherTypeToInt["Snow"], weatherTypeToInt["Thunderstorm"], weatherTypeToInt["Drizzle"] -> {
                 backgroud.setBackgroundResource(R.drawable.rainy_background)
                 weatherIconImageView.setImageResource(R.drawable.rainy_white)
                 activity!!.window.setStatusBarColor(activity!!.resources.getColor(R.color.rainyColorLight))
             }
-            2 -> {
+            weatherTypeToInt["Clear"] -> {
                 backgroud.setBackgroundResource(R.drawable.sunny_background)
                 weatherIconImageView.setImageResource(R.drawable.sunny_white)
                 activity!!.window.setStatusBarColor(activity!!.resources.getColor(R.color.sunnyColorLight))
             }
-            3 -> {
+            weatherTypeToInt["Clouds"] -> {
                 backgroud.setBackgroundResource(R.drawable.cloudy_background)
                 weatherIconImageView.setImageResource(R.drawable.cloudy_white)
                 activity!!.window.setStatusBarColor(activity!!.resources.getColor(R.color.cloudyColorLight))
+            }
+            else -> {
+                weatherTypeTextView.text = "Ups something went wrong :(";
             }
         }
     }
