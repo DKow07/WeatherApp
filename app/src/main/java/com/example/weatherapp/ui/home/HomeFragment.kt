@@ -8,16 +8,23 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.weatherapp.R
 import com.example.weatherapp.model.Daily
 import com.example.weatherapp.model.WeatherData
 import com.example.weatherapp.service.impl.WeatherManager
+import com.example.weatherapp.utils.WeatherAppUtils
 import java.text.SimpleDateFormat
 import java.util.*
 
 class HomeFragment : Fragment(), HomeContract.View {
 
     private lateinit var presenter: HomePresenter
+
+    private lateinit var adapter: ForecastAdapter
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var linearLayoutManager: LinearLayoutManager
 
     private lateinit var cityNameTextView: TextView
     private lateinit var dayNameTextView: TextView
@@ -26,8 +33,6 @@ class HomeFragment : Fragment(), HomeContract.View {
     private lateinit var weatherDescTextView: TextView
     private lateinit var mainTempTextView: TextView
     private lateinit var backgroud: ConstraintLayout
-
-    private val weatherTypeToInt = mapOf("Rain" to 1, "Clear" to 2, "Clouds" to 3, "Snow" to 4, "Thunderstorm" to 5, "Drizzle" to 6)
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -45,14 +50,21 @@ class HomeFragment : Fragment(), HomeContract.View {
 
     override fun onSuccessGetWeatherData(weatherData: WeatherData) {
         setCurrentWeather(weatherData.daily[0])
+
+        var forecastData = mutableListOf<Daily>()
+        forecastData.add(weatherData.daily[1])
+        forecastData.add(weatherData.daily[2])
+        forecastData.add(weatherData.daily[3])
+
+        adapter.updateData(forecastData)
     }
 
     private fun setCurrentWeather(currentWeather: Daily) {
-        dayNameTextView.text = getDayStringFromTimestamp(currentWeather.dateTime)
+        dayNameTextView.text = WeatherAppUtils.getDayStringFromTimestamp(currentWeather.dateTime)
         weatherTypeTextView.text = currentWeather.weather[0].main
         mainTempTextView.text = (currentWeather.temp.day.toInt()).toString() + "\u2103"
         weatherDescTextView.text = "(" + currentWeather.weather[0].desc + ")"
-        setWeatherIconAndBackground(weatherTypeToInt[currentWeather.weather[0].main] ?: 0)
+        setWeatherIconAndBackground(WeatherAppUtils.weatherTypeToInt[currentWeather.weather[0].main] ?: 0)
 
     }
 
@@ -68,26 +80,27 @@ class HomeFragment : Fragment(), HomeContract.View {
         weatherDescTextView = view.findViewById(R.id.weatherDescText)
         mainTempTextView = view.findViewById(R.id.mainTempText)
         backgroud = view.findViewById(R.id.layoutBackground)
-    }
-
-    private fun getDayStringFromTimestamp(timestamp: Long): String {
-        val sdf = SimpleDateFormat("EEEE", Locale.US)
-        return sdf.format(Date(timestamp*1000))
+        recyclerView = view.findViewById(R.id.forecastWeatherRecyclerView)
+        linearLayoutManager = LinearLayoutManager(context)
+        recyclerView.layoutManager = linearLayoutManager
+        adapter = ForecastAdapter()
+        recyclerView.adapter = adapter
     }
 
     private fun setWeatherIconAndBackground(weatherId: Int) {
         when(weatherId) {
-            weatherTypeToInt["Rain"], weatherTypeToInt["Snow"], weatherTypeToInt["Thunderstorm"], weatherTypeToInt["Drizzle"] -> {
+            WeatherAppUtils.weatherTypeToInt["Rain"], WeatherAppUtils.weatherTypeToInt["Snow"]
+                , WeatherAppUtils.weatherTypeToInt["Thunderstorm"], WeatherAppUtils.weatherTypeToInt["Drizzle"] -> {
                 backgroud.setBackgroundResource(R.drawable.rainy_background)
                 weatherIconImageView.setImageResource(R.drawable.rainy_white)
                 activity!!.window.setStatusBarColor(activity!!.resources.getColor(R.color.rainyColorLight))
             }
-            weatherTypeToInt["Clear"] -> {
+            WeatherAppUtils.weatherTypeToInt["Clear"] -> {
                 backgroud.setBackgroundResource(R.drawable.sunny_background)
                 weatherIconImageView.setImageResource(R.drawable.sunny_white)
                 activity!!.window.setStatusBarColor(activity!!.resources.getColor(R.color.sunnyColorLight))
             }
-            weatherTypeToInt["Clouds"] -> {
+            WeatherAppUtils.weatherTypeToInt["Clouds"] -> {
                 backgroud.setBackgroundResource(R.drawable.cloudy_background)
                 weatherIconImageView.setImageResource(R.drawable.cloudy_white)
                 activity!!.window.setStatusBarColor(activity!!.resources.getColor(R.color.cloudyColorLight))
